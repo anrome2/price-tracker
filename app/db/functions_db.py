@@ -5,7 +5,12 @@ from app.config import DB_NAME, TABLE_DB_NAME
 ### CREAR LA BBDD
 def crear_bbdd():
     # Creamos conexión con la BBDD
-    conn = sqlite3.connect(DB_NAME)
+    # Por si la conexión falla, se puede controlar el error con un try except, pero en este caso se asume que la conexión se realiza correctamente
+    try:
+        conn = sqlite3.connect(DB_NAME)
+    except sqlite3.Error as e:
+        print(f"Error al conectar con la BBDD: {e}")
+        return
     # Creamos objeto cursor
     cursor = conn.cursor()
     # Creamos tabla
@@ -20,7 +25,12 @@ def crear_bbdd():
 ### INSERTAR UNA FILA NUEVA
 def insertar_fila_bbdd(nombre: str = "", url: str = ""):
     # Creamos conexión con la BBDD
-    conn = sqlite3.connect(DB_NAME)
+    # Por si la conexión falla, se puede controlar el error con un try except, pero en este caso se asume que la conexión se realiza correctamente
+    try:
+        conn = sqlite3.connect(DB_NAME)
+    except sqlite3.Error as e:
+        print(f"Error al conectar con la BBDD: {e}")
+        return
     # Creamos objeto cursor
     cursor = conn.cursor()
     # El ID será único por lo que tenemos que asignar un valor, será la numeración por orden de incorporación
@@ -44,7 +54,12 @@ def insertar_fila_bbdd(nombre: str = "", url: str = ""):
 ### MODIFICAR UN CAMPO
 def modificar_producto_bbdd(id: int, nombre: str = "", url: str = ""):
     # Creamos conexión con la BBDD
-    conn = sqlite3.connect(DB_NAME)
+    # Por si la conexión falla, se puede controlar el error con un try except, pero en este caso se asume que la conexión se realiza correctamente
+    try:
+        conn = sqlite3.connect(DB_NAME)
+    except sqlite3.Error as e:
+        print(f"Error al conectar con la BBDD: {e}")
+        return
     # Creamos objeto cursor
     cursor = conn.cursor()
     # Actualizamos el nombre o la url (o ambos) en caso de la que string no sea una cadena vacía
@@ -66,7 +81,12 @@ def modificar_producto_bbdd(id: int, nombre: str = "", url: str = ""):
 ### BUSCAR UN ID EN LA BBDD
 def buscar_id_bbdd(id: int):
     # Creamos conexión con la BBDD
-    conn = sqlite3.connect(DB_NAME)
+    # Por si la conexión falla, se puede controlar el error con un try except, pero en este caso se asume que la conexión se realiza correctamente
+    try:
+        conn = sqlite3.connect(DB_NAME)
+    except sqlite3.Error as e:
+        print(f"Error al conectar con la BBDD: {e}")
+        return
     # Creamos objeto cursor
     cursor = conn.cursor()
     # Buscamos el ID en la columna
@@ -87,7 +107,12 @@ def buscar_id_bbdd(id: int):
 ### MOSTRAR LISTADO DE PRODUCTOS
 def listado_productos_bbd():
     # Creamos conexión con la BBDD
-    conn = sqlite3.connect(DB_NAME)
+    # Por si la conexión falla, se puede controlar el error con un try except, pero en este caso se asume que la conexión se realiza correctamente
+    try:
+        conn = sqlite3.connect(DB_NAME)
+    except sqlite3.Error as e:
+        print(f"Error al conectar con la BBDD: {e}")
+        return
     # Creamos objeto cursor
     cursor = conn.cursor()
     # Seleccionamos el ID y NOMBRE para mostrarlo por pantalla
@@ -97,3 +122,24 @@ def listado_productos_bbd():
         print(f"{id}. {nombre}\n")
     # Cerramos connexión con la BBDD
     conn.close()
+
+### DEVUELVE DICCIONARIO PRODUCTO - URL
+def dicc_producto_url():
+    # Creamos conexión con la BBDD
+    # Por si la conexión falla, se puede controlar el error con un try except, pero en este caso se asume que la conexión se realiza correctamente
+    try:
+        conn = sqlite3.connect(DB_NAME)
+    except sqlite3.Error as e:
+        print(f"Error al conectar con la BBDD: {e}")
+        return {}
+    # Creamos objeto cursor
+    cursor = conn.cursor()
+    # Seleccionamos el NOMBRE y URL
+    res = cursor.execute(f'''SELECT ID, NOMBRE FROM {TABLE_DB_NAME}''')
+    # Guardamos en un diccionario "producto": "url"
+    diccionario = {}
+    for nombre, url in res:
+        diccionario[nombre] = url
+    # Cerramos connexión con la BBDD
+    conn.close()
+    return diccionario
