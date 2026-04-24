@@ -212,3 +212,5 @@ productos.db
 
 # Notes
 notes.txt
+
+.secrets/
