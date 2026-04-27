@@ -124,7 +124,7 @@ def listado_productos_bbd():
     conn.close()
 
 ### DEVUELVE DICCIONARIO PRODUCTO - URL
-def dicc_producto_url():
+def dicc_producto_url() -> dict:
     # Creamos conexión con la BBDD
     # Por si la conexión falla, se puede controlar el error con un try except, pero en este caso se asume que la conexión se realiza correctamente
     try:
@@ -135,11 +135,11 @@ def dicc_producto_url():
     # Creamos objeto cursor
     cursor = conn.cursor()
     # Seleccionamos el NOMBRE y URL
-    res = cursor.execute(f'''SELECT ID, NOMBRE FROM {TABLE_DB_NAME}''')
+    res = cursor.execute(f'''SELECT ID, NOMBRE, URL FROM {TABLE_DB_NAME}''')
     # Guardamos en un diccionario "producto": "url"
     diccionario = {}
-    for nombre, url in res:
-        diccionario[nombre] = url
+    for id, nombre, url in res:
+        diccionario[id] = {nombre: url}
     # Cerramos connexión con la BBDD
     conn.close()
     return diccionario
