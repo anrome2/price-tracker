@@ -22,7 +22,6 @@ def check_permission(url):
         return False
 
 def extract_price(url):
-    # Dado que ya sabemos que la URL es válida, conectaremos con ella
     # Primero comprobamos si tenemos permiso:
     if check_permission(url=url):
         headers = {
@@ -31,26 +30,53 @@ def extract_price(url):
         }
 
         # Hacemos la petición de forma educada
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            # 3. Analizar el HTML
-            soup = BeautifulSoup(response.text, 'html.parser')
-            
-            # 4. Buscar el precio. Buscamos por el ID directamente
-            elemento_precio = soup.find('input', id='twister-plus-price-data-price')
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                
+                # --- ESTRATEGIA 1: Input oculto (El más preciso) ---
+                elemento_precio = soup.find('input', id='twister-plus-price-data-price')
+                if elemento_precio and elemento_precio.get('value'):
+                    precio_final = elemento_precio['value']
+                    print(f"Precio encontrado (vía input): {precio_final} €")
+                    return precio_final
 
-            if elemento_precio:
-                # Usamos ['value'] para sacar el contenido del atributo value
-                precio_final = elemento_precio['value'] 
-                print(f"Precio encontrado: {precio_final} €")
-                return precio_final
-            else:
+                # --- ESTRATEGIA 2: Selector visual principal (apex-pricetopay) ---
+                # Usamos el span que contiene el precio completo para evitar decimales separados
+                contenedor_visual = soup.find('span', class_='apex-pricetopay-value')
+                if contenedor_visual:
+                    span_offscreen = contenedor_visual.find('span', class_='a-offscreen')
+                    if span_offscreen:
+                        precio_texto = span_offscreen.get_text(strip=True)
+                        # Limpiamos: "29,99€" -> "29.99"
+                        precio_final = precio_texto.replace('€', '').replace(',', '.').strip()
+                        print(f"Precio encontrado (vía visual): {precio_final} €")
+                        return precio_final
+
+                # --- ESTRATEGIA 3: Selector genérico de Amazon (a-price) ---
+                # Como última opción buscamos la clase estándar
+                # etiqueta_a_price = soup.find('span', class_='a-price')
+                # if etiqueta_a_price:
+                #     span_invisible = etiqueta_a_price.find('span', class_='a-offscreen')
+                #     if span_invisible:
+                #         precio_texto = span_invisible.get_text(strip=True)
+                #         precio_final = precio_texto.replace('€', '').replace(',', '.').strip()
+                #         print(f"Precio encontrado (vía genérica): {precio_final} €")
+                #         return precio_final
+
+                print("No se encontró el selector de precio en esta página.")
                 return None
-        else:
-            # Añadir reintentos
-            print("No se pudo acceder a la página.")
+            
+            else:
+                print(f"No se pudo acceder. Código de estado: {response.status_code}")
+                return None
+        
+        except Exception as e:
+            print(f"Error durante la petición: {e}")
             return None
     else:
+        print("Permiso denegado por robots.txt")
         return None
 
 
