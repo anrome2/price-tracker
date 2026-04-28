@@ -138,9 +138,9 @@ def actualizar_precio(id: int, sheet: gspread.Worksheet, precio, nombre: str = "
         print(f"El producto {nombre} no está en el GS, añadiéndolo...")
         
         # Definimos los valores de la fila a insertar
-        fila_datos = [str(id), nombre, f'=HYPERLINK("{url}", "Enlace")', precio]
+        fila_datos = [str(id), nombre, f'=HYPERLINK("{url}"; "Enlace")', precio]
         last_row = len(sheet.get_all_values()) + 1
-        sheet.insert_row(fila_datos, last_row)
+        sheet.insert_row(fila_datos, last_row, value_input_option="USER_ENTERED") # type: ignore
         
         # sheet.merge_cells(f"A{last_row}:A{last_row+1}")
         # sheet.merge_cells(f"B{last_row}:B{last_row+1}")
