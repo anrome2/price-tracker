@@ -106,14 +106,14 @@ def columna_fecha_hora(sheet: gspread.Worksheet):
     # Extraemos la hora exacta de la consulta
     ts = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
     # Número de columnas actuales
-    last_col = len(sheet.get_all_values()[0])
+    # last_col = len(sheet.get_all_values()[0])
     # Para el formato necesitamos la letra que es
-    letra1 = numero_a_letra(last_col+1)
+    # letra1 = numero_a_letra(last_col+1)
 
     # Insertamos el valor de la columna
-    sheet.insert_cols([[ts]], last_col+1)
+    sheet.insert_cols([[ts]], 4)
     # Modificamos el formato, para el color de fondo, que sea negrita y el formato fecha y hora
-    sheet.format(f"{letra1}1", {
+    sheet.format(f"D1", {
         "numberFormat": {
             "type": "DATE_TIME",
             "pattern": "dd/mm/yyyy hh:mm:ss"
@@ -130,20 +130,59 @@ def columna_fecha_hora(sheet: gspread.Worksheet):
 
 def actualizar_precio(id: int, sheet: gspread.Worksheet, precio, nombre: str = "", url: str = ""):
     # En primer lugar buscamos si el id se encuentra en la columna 'ID'
-    res = sheet.find(query = str(id), in_column=0)
+
+    cell_list = sheet.findall(str(id), in_column=1)
 
     # Si no está el producto, se añade 
-    if not res:
+    if not cell_list:
         print(f"El producto {nombre} no está en el GS, añadiéndolo...")
         
         # Definimos los valores de la fila a insertar
-        fila_datos = [id, nombre, url, precio]
+        fila_datos = [str(id), nombre, f'=HYPERLINK("{url}", "Enlace")', precio]
         last_row = len(sheet.get_all_values()) + 1
         sheet.insert_row(fila_datos, last_row)
         
         # sheet.merge_cells(f"A{last_row}:A{last_row+1}")
         # sheet.merge_cells(f"B{last_row}:B{last_row+1}")
         # sheet.merge_cells(f"C{last_row}:C{last_row+1}")
+    else:
+        # Identificamos cuál es el índice de la fila
+        row = cell_list[0].row
+        # last_col = len(sheet.get_all_values()[0])
+        sheet.update_cell(row, 4, precio)
+
+def modificar_producto_sheet(id, nombre, url):
+    sheet = obtener_o_crear_hoja()
+
+    cell_list = sheet.findall(str(id), in_column=1)
+
+    if not cell_list:
+        print("El producto aún no se ha subido al Google Sheet, no hace falta modificarlo")
+    else:
+        row = cell_list[0].row
+        if nombre:
+            sheet.update_cell(row, 2, nombre)
+        if url:
+            sheet.update_cell(row, 3, f'=HYPERLINK("{url}", "Enlace")')
+
+def mostrar_precios(id) -> list:
+    sheet = obtener_o_crear_hoja()
+
+    cell_list = sheet.findall(str(id), in_column=1)
+
+    if not cell_list:
+        print("El producto aún no se ha subido al Google Sheet, no hace falta modificarlo")
+        return []
+    else:
+        row = cell_list[0].row
+        # Las columnas que ocupa este producto
+        n = sum(1 for cell in sheet.get_all_values()[row] if cell.strip())
+        letra = numero_a_letra(n)
+
+        listado_precios = sheet.get(f'D{row}:{letra}{row}')
+        listado_fechas = sheet.get(f'D1:{letra}1')
+        listado_fechas.append(listado_precios[0])
+        return listado_fechas
 
 # EJECUCIÓN DE PRUEBA
 if __name__ == "__main__":

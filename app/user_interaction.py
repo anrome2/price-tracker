@@ -1,5 +1,7 @@
 import os
-import validators # Librería para validar las url
+import validators
+
+from app.sheets import modificar_producto_sheet, mostrar_precios # Librería para validar las url
 
 from .config import DB_NAME
 from .db.functions_db import buscar_id_bbdd, crear_bbdd, insertar_fila_bbdd, listado_productos_bbd, modificar_producto_bbdd
@@ -116,6 +118,7 @@ def usr_interact():
                             print("No es una URL válida. Inténtalo de nuevo.")
                 
                 modificar_producto_bbdd(id=id, nombre=nombre, url=url)
+                modificar_producto_sheet(id=id, nombre=nombre, url=url)
                 print(f"Modificado el producto {id} con éxito")
                 print("¿Desea realizar alguna otra acción?\n")
                 while True:
@@ -149,6 +152,15 @@ def usr_interact():
                     except ValueError:
                         print("No es un número válido. Inténtalo de nuevo.")
                 # Aquí se mostrará un dataframe con los precios del producto almacenados
+                datos = mostrar_precios(id=id)
+                if datos:
+                    fechas = datos[0]
+                    precios = datos[1]
+
+                    print("Histórico de precios:\n")
+
+                    for fecha, precio in zip(fechas, precios):
+                        print(f"Fecha y hora: {fecha}  →  Precio: {precio}€")
                 print("¿Desea realizar alguna otra acción?\n")
                 while True:
                     try:
